@@ -3,16 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>부국제 근처 관광코스</title>
+    <title>Busan Tour Map - Ultimate Edition</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;700&display=swap"
       rel="stylesheet"
     />
     <style>
+      :root {
+        --background-color: #0d1b2a;
+        --primary-text: #eaeaea;
+        --secondary-text: #b0b0b0;
+        --card-bg: #1b263b;
+        --border-color: #415a77;
+        --neon-pink: #f000b8;
+        --neon-cyan: #00f2ea;
+        --font-heading: "Bebas Neue", cursive;
+        --font-body: "Noto Sans KR", sans-serif;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -20,13 +34,9 @@
       }
 
       body {
-        font-family: "Inter", sans-serif;
-        background: linear-gradient(
-          135deg,
-          #ff9a56 0%,
-          #ff6b9d 50%,
-          #c44569 100%
-        );
+        font-family: var(--font-body);
+        background-color: var(--background-color);
+        color: var(--primary-text);
         min-height: 100vh;
         overflow-x: hidden;
       }
@@ -34,519 +44,778 @@
       .container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 30px 20px;
+        padding: 40px 20px;
       }
 
       .header {
         text-align: center;
-        margin-bottom: 30px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        padding: 30px;
-        border-radius: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
       }
-
       .header h1 {
-        color: white;
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 15px;
-        text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.3);
-        letter-spacing: -1px;
+        font-family: var(--font-heading);
+        font-size: 5rem;
+        color: var(--primary-text);
+        letter-spacing: 3px;
+        text-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan),
+          0 0 20px var(--neon-cyan);
+        animation: flicker 3s infinite alternate;
       }
 
+      @keyframes flicker {
+        0%,
+        18%,
+        22%,
+        25%,
+        53%,
+        57%,
+        100% {
+          text-shadow: 0 0 4px var(--neon-cyan), 0 0 11px var(--neon-cyan),
+            0 0 19px var(--neon-cyan);
+        }
+        20%,
+        24%,
+        55% {
+          text-shadow: none;
+        }
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 40px;
+      }
+      .course-buttons,
       .language-buttons {
         display: flex;
         justify-content: center;
-        gap: 20px;
-        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
       }
-
-      .lang-btn {
-        padding: 15px 30px;
-        border: none;
-        border-radius: 30px;
-        background: linear-gradient(135deg, #ffa726, #ff7043);
-        color: white;
+      .btn {
+        font-family: var(--font-body);
+        font-weight: 700;
+        padding: 12px 25px;
+        border-radius: 5px;
+        background: transparent;
         font-size: 16px;
-        font-weight: 600;
         cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 8px 25px rgba(255, 112, 67, 0.4);
-        position: relative;
-        overflow: hidden;
+        transition: all 0.3s ease;
       }
-
-      .lang-btn::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        transition: left 0.5s;
+      .course-btn {
+        border: 2px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        text-shadow: 0 0 2px var(--neon-cyan);
       }
-
-      .lang-btn:hover::before {
-        left: 100%;
+      .course-btn:hover,
+      .course-btn.active {
+        background: var(--neon-cyan);
+        color: var(--background-color);
+        box-shadow: 0 0 5px var(--neon-cyan), 0 0 15px var(--neon-cyan),
+          0 0 30px var(--neon-cyan);
+        text-shadow: none;
       }
-
-      .lang-btn:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 15px 40px rgba(255, 112, 67, 0.6);
+      .lang-btn {
+        border: 1px solid var(--neon-pink);
+        color: var(--neon-pink);
+        font-size: 14px;
+        padding: 8px 20px;
       }
-
+      .lang-btn:hover,
       .lang-btn.active {
-        background: linear-gradient(135deg, #42a5f5, #1e88e5);
-        box-shadow: 0 8px 25px rgba(66, 165, 245, 0.4);
+        background: var(--neon-pink);
+        color: var(--background-color);
+        box-shadow: 0 0 5px var(--neon-pink), 0 0 10px var(--neon-pink);
       }
 
-      .map-container {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        border-radius: 25px;
-        padding: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
-      }
-
-      .map-section {
-        width: 100%;
-      }
-
-      #map {
-        height: 500px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
-      }
-
-      .attractions-list {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        border-radius: 25px;
-        padding: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-      }
-
-      .attractions-list h3 {
-        color: white;
-        margin-bottom: 25px;
-        font-size: 2rem;
-        font-weight: 600;
-        text-align: center;
-        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
-      }
-
-      .attractions-grid {
+      .content-wrapper {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 40px;
       }
-
-      .attraction-item {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.2),
-          rgba(255, 255, 255, 0.1)
-        );
+      .map-container,
+      .itinerary-container {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
         padding: 25px;
-        border-radius: 20px;
-        color: white;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      }
+      #map {
+        height: 550px;
+        border-radius: 4px;
+        background-color: #000;
+      }
+      .itinerary-container h3 {
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 30px;
+        letter-spacing: 2px;
+        color: var(--neon-cyan);
+        text-shadow: 0 0 5px var(--neon-cyan);
+      }
+      .itinerary-days {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+      }
+      .day-plan h4 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: var(--primary-text);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+      }
+
+      .place {
+        background-color: #0d1b2a;
+        border-radius: 8px;
+        margin-bottom: 15px;
         cursor: pointer;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        position: relative;
+        transition: all 0.3s ease;
         overflow: hidden;
+        border: 1px solid var(--border-color);
       }
-
-      .attraction-item::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
+      .place:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 15px var(--neon-pink);
+        border-color: var(--neon-pink);
+      }
+      .place img {
         width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          135deg,
-          rgba(255, 167, 38, 0.1),
-          rgba(255, 107, 157, 0.1)
-        );
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        height: 250px; /* 여기를 150px에서 250px로 변경했습니다. */
+        object-fit: cover;
+        display: block;
       }
-
-      .attraction-item:hover::before {
-        opacity: 1;
-      }
-
-      .attraction-item:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        border-color: rgba(255, 255, 255, 0.4);
-      }
-
-      .attraction-item h4 {
-        font-size: 1.4rem;
-        font-weight: 600;
-        margin-bottom: 10px;
-        position: relative;
-        z-index: 1;
-      }
-
-      .attraction-item p {
-        font-size: 1rem;
-        opacity: 0.9;
-        line-height: 1.5;
-        position: relative;
-        z-index: 1;
-      }
-
-      .custom-popup {
-        background: linear-gradient(135deg, #ff9a56, #ff6b9d);
-        color: white;
-        border-radius: 15px;
+      .place-info {
         padding: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      .place-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-text);
+        margin-bottom: 5px;
+      }
+      .place-desc {
+        font-size: 0.9rem;
+        color: var(--secondary-text);
+        line-height: 1.5;
       }
 
       .leaflet-popup-content-wrapper {
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        background: var(--card-bg);
+        color: var(--primary-text);
+        border-radius: 5px;
+        border: 1px solid var(--neon-pink);
+        box-shadow: 0 0 20px var(--neon-pink);
       }
-
-      .floating-elements {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: -1;
+      .leaflet-popup-content {
+        margin: 15px;
+        font-size: 14px;
       }
-
-      .floating-circle {
-        position: absolute;
+      .leaflet-popup-tip {
+        background: var(--card-bg);
+      }
+      .leaflet-popup-content b {
+        font-size: 16px;
+        color: var(--neon-cyan);
+      }
+      a.leaflet-popup-close-button {
+        color: var(--primary-text);
+      }
+      .neon-marker {
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        animation: float 6s ease-in-out infinite;
+        border: 2px solid white;
+        animation: pulse 1.5s infinite;
       }
-
-      .circle-1 {
-        width: 80px;
-        height: 80px;
-        top: 20%;
-        left: 10%;
-        animation-delay: 0s;
-      }
-
-      .circle-2 {
-        width: 120px;
-        height: 120px;
-        top: 60%;
-        right: 15%;
-        animation-delay: 2s;
-      }
-
-      .circle-3 {
-        width: 60px;
-        height: 60px;
-        bottom: 20%;
-        left: 20%;
-        animation-delay: 4s;
-      }
-
-      @keyframes float {
+      @keyframes pulse {
         0%,
         100% {
-          transform: translateY(0px);
+          transform: scale(0.9);
         }
-        50% {
-          transform: translateY(-20px);
+        70% {
+          transform: scale(1.1);
         }
       }
+      .marker-day1 {
+        background-color: var(--neon-pink);
+        box-shadow: 0 0 8px var(--neon-pink), 0 0 15px var(--neon-pink);
+      }
+      .marker-day2 {
+        background-color: var(--neon-cyan);
+        box-shadow: 0 0 8px var(--neon-cyan), 0 0 15px var(--neon-cyan);
+      }
 
-      @media (max-width: 768px) {
-        .attractions-grid {
+      @media (max-width: 900px) {
+        .itinerary-days {
           grid-template-columns: 1fr;
         }
-
+      }
+      @media (max-width: 768px) {
         .header h1 {
-          font-size: 2rem;
+          font-size: 3.5rem;
         }
-
-        .language-buttons {
-          flex-wrap: wrap;
+        .controls {
+          gap: 20px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="floating-elements">
-      <div class="floating-circle circle-1"></div>
-      <div class="floating-circle circle-2"></div>
-      <div class="floating-circle circle-3"></div>
-    </div>
-
     <div class="container">
-      <div class="header">
-        <h1 id="title">부국제 근처 관광코스</h1>
+      <header class="header"><h1 id="main-title">BUSAN TOUR</h1></header>
+
+      <div class="controls">
+        <div class="course-buttons">
+          <button
+            id="course-ko"
+            class="btn course-btn active"
+            onclick="changeCourse('ko')"
+          >
+            <span id="course-ko-text">🇰🇷 한국 친구 코스</span>
+          </button>
+          <button
+            id="course-ja"
+            class="btn course-btn"
+            onclick="changeCourse('ja')"
+          >
+            <span id="course-ja-text">🇯🇵 일본 친구 코스</span>
+          </button>
+          <button
+            id="course-cn"
+            class="btn course-btn"
+            onclick="changeCourse('cn')"
+          >
+            <span id="course-cn-text">🇨🇳 중국 친구 코스</span>
+          </button>
+        </div>
         <div class="language-buttons">
-          <button class="lang-btn active" onclick="changeLanguage('ko')">
+          <button class="btn lang-btn active" onclick="changeLanguage('ko')">
             한국어
           </button>
-          <button class="lang-btn" onclick="changeLanguage('zh')">中文</button>
-          <button class="lang-btn" onclick="changeLanguage('ja')">
+          <button class="btn lang-btn" onclick="changeLanguage('ja')">
             日本語
+          </button>
+          <button class="btn lang-btn" onclick="changeLanguage('zh')">
+            中文
           </button>
         </div>
       </div>
 
-      <div class="map-container">
-        <div class="map-section">
-          <div id="map"></div>
-        </div>
-      </div>
-
-      <div class="attractions-list">
-        <h3 id="attractions-title">주요 관광지</h3>
-        <div class="attractions-grid" id="attractions-content"></div>
+      <div class="content-wrapper">
+        <section class="map-container"><div id="map"></div></section>
+        <section class="itinerary-container">
+          <h3 id="itinerary-title"></h3>
+          <div class="itinerary-days">
+            <div class="day-plan" id="day1-plan"></div>
+            <div class="day-plan" id="day2-plan"></div>
+          </div>
+        </section>
       </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-      let currentLang = "ko";
-      let map;
-      let markers = [];
+      let currentCourse = "ko",
+        currentLang = "ko",
+        map,
+        markers = [],
+        routeLines = [];
 
-      const translations = {
+      const courseDataFull = {
         ko: {
-          title: "부국제 근처 관광코스",
-          attractionsTitle: "주요 관광지",
-          attractions: [
-            {
-              name: "해동 용궁사",
-              description:
-                "바다 위에 지어진 아름다운 사찰로 일출 명소입니다. 용왕님께 기도하면 한 가지 소원을 들어준다는 전설이 있어 많은 관광객들이 찾는 곳입니다.",
-              lat: 35.1885,
-              lng: 129.2237,
-            },
-            {
-              name: "광안리 해수욕장",
-              description:
-                "부산의 대표적인 해수욕장으로 광안대교의 아름다운 야경을 감상할 수 있습니다. 카페와 레스토랑이 즐비해 데이트 코스로도 인기가 높습니다.",
-              lat: 35.153,
-              lng: 129.1184,
-            },
-            {
-              name: "감천문화마을",
-              description:
-                "산비탈에 색색의 집들이 어우러진 예술마을로 '한국의 마추픽추'라고 불립니다. 벽화와 조형물들이 어우러져 포토존이 가득한 곳입니다.",
-              lat: 35.0976,
-              lng: 129.0107,
-            },
-            {
-              name: "태종대",
-              description:
-                "절벽과 바다의 절경을 감상할 수 있는 부산의 대표 명소입니다. 등대와 자갈해변, 울창한 숲이 조화를 이루어 자연의 아름다움을 만끽할 수 있습니다.",
-              lat: 35.0513,
-              lng: 129.0875,
-            },
-            {
-              name: "자갈치시장",
-              description:
-                "한국 최대의 수산물 시장으로 싱싱한 해산물을 맛볼 수 있습니다. 1층에서 구입한 해산물을 2층에서 바로 요리해 먹을 수 있어 관광객들에게 인기입니다.",
-              lat: 35.0965,
-              lng: 129.0308,
-            },
-            {
-              name: "부산타워",
-              description:
-                "부산 시내를 한눈에 내려다볼 수 있는 전망대입니다. 특히 야경이 아름다워 연인들의 데이트 코스로 사랑받고 있으며, 부산의 상징적인 랜드마크입니다.",
-              lat: 35.1007,
-              lng: 129.032,
-            },
+          day1: [
+            { id: "dureraum", lat: 35.1702, lng: 129.1249 },
+            { id: "miryang", lat: 35.1612, lng: 129.1622 },
+            { id: "osulloc", lat: 35.1593, lng: 129.1601 },
+            { id: "haeundae", lat: 35.1587, lng: 129.1604 },
+            { id: "toyoko", lat: 35.1623, lng: 129.1618 },
           ],
-        },
-        zh: {
-          title: "釜谷祭附近观光路线",
-          attractionsTitle: "主要观光景点",
-          attractions: [
-            {
-              name: "海东龙宫寺",
-              description:
-                "建于海上的美丽寺庙，是著名的日出观赏地。传说向龙王祈祷能实现一个愿望，因此吸引了众多游客前来参拜。",
-              lat: 35.1885,
-              lng: 129.2237,
-            },
-            {
-              name: "广安里海水浴场",
-              description:
-                "釜山代表性的海水浴场，可以欣赏广安大桥美丽的夜景。沿岸咖啡厅和餐厅林立，是热门的约会场所。",
-              lat: 35.153,
-              lng: 129.1184,
-            },
-            {
-              name: "甘川文化村",
-              description:
-                "山坡上五彩缤纷房屋汇聚的艺术村庄，被称为'韩国的马丘比丘'。壁画和雕塑作品随处可见，到处都是拍照景点。",
-              lat: 35.0976,
-              lng: 129.0107,
-            },
-            {
-              name: "太宗台",
-              description:
-                "可以欣赏悬崖与大海绝美景色的釜山代表性名胜。灯塔、砾石海滩和茂密森林和谐相融，可以尽享大自然之美。",
-              lat: 35.0513,
-              lng: 129.0875,
-            },
-            {
-              name: "扎嘎其市场",
-              description:
-                "韩国最大的水产品市场，可以品尝新鲜的海产品。在1楼购买的海鲜可以直接在2楼加工品尝，深受游客欢迎。",
-              lat: 35.0965,
-              lng: 129.0308,
-            },
-            {
-              name: "釜山塔",
-              description:
-                "可以一览釜山市区全景的展望台。尤其夜景非常美丽，是情侣们喜爱的约会场所，也是釜山的标志性地标建筑。",
-              lat: 35.1007,
-              lng: 129.032,
-            },
+          day2: [
+            { id: "haeundaemarket", lat: 35.1598, lng: 129.1595 },
+            { id: "dongbaek", lat: 35.1531, lng: 129.1485 },
           ],
         },
         ja: {
-          title: "釜谷祭付近観光コース",
-          attractionsTitle: "主要観光地",
-          attractions: [
-            {
-              name: "海東龍宮寺",
-              description:
-                "海の上に建てられた美しい寺院で、日の出の名所です。龍王様に祈願すると願いが一つ叶うという伝説があり、多くの観光客が訪れます。",
-              lat: 35.1885,
-              lng: 129.2237,
-            },
-            {
-              name: "広安里海水浴場",
-              description:
-                "釜山を代表する海水浴場で、広安大橋の美しい夜景を鑑賞できます。カフェやレストランが立ち並び、デートコースとしても人気が高いです。",
-              lat: 35.153,
-              lng: 129.1184,
-            },
-            {
-              name: "甘川文化村",
-              description:
-                "山の斜面にカラフルな家々が調和した芸術村で、'韓国のマチュピチュ'と呼ばれています。壁画や造形物が調和し、フォトゾーンがいっぱいの場所です。",
-              lat: 35.0976,
-              lng: 129.0107,
-            },
-            {
-              name: "太宗台",
-              description:
-                "断崖と海の絶景を鑑賞できる釜山の代表名所です。灯台と砂利浜、うっそうとした森が調和し、自然の美しさを満喫できます。",
-              lat: 35.0513,
-              lng: 129.0875,
-            },
-            {
-              name: "チャガルチ市場",
-              description:
-                "韓国最大の水産物市場で、新鮮な海産物を味わうことができます。1階で購入した海産物を2階ですぐに調理して食べることができ、観光客に人気です。",
-              lat: 35.0965,
-              lng: 129.0308,
-            },
-            {
-              name: "釜山タワー",
-              description:
-                "釜山市内を一望できる展望台です。特に夜景が美しく、恋人たちのデートコースとして愛されており、釜山の象徴的なランドマークです。",
-              lat: 35.1007,
-              lng: 129.032,
-            },
+          day1: [
+            { id: "dureraum", lat: 35.1702, lng: 129.1249 },
+            { id: "shinsegae", lat: 35.1689, lng: 129.1296 },
+            { id: "osulloc", lat: 35.1593, lng: 129.1601 },
+            { id: "gwangalli", lat: 35.1534, lng: 129.1181 },
+            { id: "mulbora", lat: 35.1541, lng: 129.1182 },
+            { id: "browndot", lat: 35.153, lng: 129.1203 },
           ],
+          day2: [
+            { id: "nomorepizza", lat: 35.1528, lng: 129.1198 },
+            { id: "bupyeong", lat: 35.0991, lng: 129.0253 },
+          ],
+        },
+        cn: {
+          day1: [
+            { id: "dureraum", lat: 35.1702, lng: 129.1249 },
+            { id: "gaegummil", lat: 35.1558, lng: 129.056 },
+            { id: "seomyeoncafe", lat: 35.1568, lng: 129.0559 },
+            { id: "gwangalli", lat: 35.1534, lng: 129.1181 },
+            { id: "avenue", lat: 35.1578, lng: 129.0592 },
+          ],
+          day2: [
+            { id: "gukje", lat: 35.1001, lng: 129.027 },
+            { id: "dureraum2", lat: 35.1702, lng: 129.1249 },
+          ],
+        },
+      };
+
+      const translationsFull = {
+        ko: {
+          courseButtons: {
+            ko: "🇰🇷 한국 친구 코스",
+            ja: "🇯🇵 일본 친구 코스",
+            cn: "🇨🇳 중국 친구 코스",
+          },
+          courseTitle: {
+            ko: "한국 친구 코스",
+            ja: "일본 친구 코스",
+            cn: "중국 친구 코스",
+          },
+          day1: "Day 1",
+          day2: "Day 2",
+          places: {
+            dureraum: {
+              name: "영화의전당",
+              desc: "부산국제영화제 메인 상영관, 시네필 성지. 근처 벡스코/센텀시티와 도보 10분 거리",
+              img: "images/영화의전당.jpg",
+            },
+            miryang: {
+              name: "밀양순대돼지국밥 해운대점",
+              desc: "가성비 국밥 맛집 (6~8천원대), 든든한 점심. 영화의전당에서 버스로 약 10분",
+              img: "images/밀양순대돼지국밥.jpg",
+            },
+            osulloc: {
+              name: "오설록 티하우스 해운대점",
+              desc: "초록빛 감성카페, 티+디저트. 해운대 해수욕장 바로 앞",
+              img: "images/오설록.jpg",
+            },
+            haeundae: {
+              name: "해운대 해수욕장",
+              desc: "산책하며 사진 촬영 포인트. 일몰 타임 추천",
+              img: "images/해운대.jpg",
+            },
+            toyoko: {
+              name: "토요코인 해운대 1호점",
+              desc: "도보로 해운대 일대 접근 가능, 1박 4만~5만원대",
+              img: "images/토요코인.jpg",
+            },
+            haeundaemarket: {
+              name: "해운대 전통시장",
+              desc: "로컬 분위기 + 합리적 가격 + 길거리음식",
+              img: "images/해운대전통시장.jpg",
+            },
+            dongbaek: {
+              name: "동백공원",
+              desc: "해안산책로 걷기",
+              img: "images/동백공원.webp",
+            },
+            shinsegae: {
+              name: "센텀시티 신세계 푸드코트",
+              desc: "깔끔하고 다양한 음식, 카드 결제 편리",
+              img: "images/신세계.jpg",
+            },
+            gwangalli: {
+              name: "광안리 해수욕장",
+              desc: "일몰 촬영 포인트. 해변 바로 앞 카페거리에서 자유 산책",
+              img: "images/광안리.jpg",
+            },
+            mulbora: {
+              name: "물보라 광안점",
+              desc: "바다 바로 앞 이자카야 감성 술집. 인당 약 1만원대",
+              img: "images/물보라.jpg",
+            },
+            browndot: {
+              name: "브라운도트호텔 광안리점",
+              desc: "바다 뷰, 1박 5만원대, 깔끔한 인테리어",
+              img: "images/브라운도트.jpg",
+            },
+            nomorepizza: {
+              name: "노모어피자 광안리점",
+              desc: "광안리 해수욕장 인근. 개성있는 피자 메뉴",
+              img: "images/노모어피자.jpg",
+            },
+            bupyeong: {
+              name: "부평깡통시장",
+              desc: "부산 명물 먹거리 탐방, 길거리 음식 다양",
+              img: "images/부평깡통시장.jpg",
+            },
+            gaegummil: {
+              name: "서면 개금밀면",
+              desc: "부산 대표 냉면류, 가성비 7천원대. 영화의전당 → 서면 지하철 약 25분",
+              img: "images/개금밀면.jpg",
+            },
+            seomyeoncafe: {
+              name: "서면 카페거리 (앤드테일/웨이브온)",
+              desc: "인스타 감성 카페 밀집지역",
+              img: "images/서면카페.jpg",
+            },
+            avenue: {
+              name: "아브뉴 호텔 서면점",
+              desc: "중심지 접근성 우수, 1박 4만대",
+              img: "images/아브뉴.jpg",
+            },
+            gukje: {
+              name: "국제시장/부평깡통시장",
+              desc: "간단한 쇼핑 + 한국 분위기",
+              img: "images/국제시장.jpg",
+            },
+            dureraum2: {
+              name: "영화의전당 수변길 재방문",
+              desc: "부산국제영화제 상징적 장소. 단체사진 명소",
+              img: "images/영화의전당.jpg",
+            },
+          },
+        },
+        ja: {
+          courseButtons: {
+            ko: "🇰🇷 韓国の友達コース",
+            ja: "🇯🇵 日本の友達コース",
+            cn: "🇨🇳 中国の友達コース",
+          },
+          courseTitle: {
+            ko: "韓国の友達コース",
+            ja: "日本の友達コース",
+            cn: "中国の友達コース",
+          },
+          day1: "Day 1",
+          day2: "Day 2",
+          places: {
+            dureraum: {
+              name: "映画の殿堂",
+              desc: "BIFF公式上映館、デザインフォトゾーン多数",
+              img: "images/영화의전당.jpg",
+            },
+            miryang: {
+              name: "ミリャンスンデ豚クッパ 海雲台店",
+              desc: "コスパ良いクッパ専門店（6~8千ウォン）、ボリューム満点。映画の殿堂からバスで約10分",
+              img: "images/밀양순대돼지국밥.jpg",
+            },
+            osulloc: {
+              name: "オソルロックティーハウス 海雲台店",
+              desc: "日本人観光客に人気、抹茶デザート",
+              img: "images/오설록.jpg",
+            },
+            haeundae: {
+              name: "海雲台ビーチ",
+              desc: "散策しながら撮影ポイント。夕暮れ時がおすすめ",
+              img: "images/해운대.jpg",
+            },
+            toyoko: {
+              name: "東横イン 海雲台1号店",
+              desc: "徒歩で海雲台エリアにアクセス可能、1泊4万~5万ウォン",
+              img: "images/토요코인.jpg",
+            },
+            haeundaemarket: {
+              name: "海雲台伝統市場",
+              desc: "ローカル雰囲気 + リーズナブル + 屋台グルメ",
+              img: "images/해운대전통시장.jpg",
+            },
+            dongbaek: {
+              name: "冬柏公園",
+              desc: "海岸散策路ウォーキング",
+              img: "images/동백공원.jpg",
+            },
+            shinsegae: {
+              name: "センタムシティ新世界フードコート",
+              desc: "清潔で多様なメニュー、カード決済便利",
+              img: "images/신세계.jpg",
+            },
+            gwangalli: {
+              name: "広安里ビーチ",
+              desc: "夕暮れ撮影ポイント。ビーチ沿いカフェ通りで自由散策",
+              img: "images/광안리.jpg",
+            },
+            mulbora: {
+              name: "ムルボラ 広安店",
+              desc: "海の目の前、居酒屋雰囲気の飲み屋。一人約1万ウォン",
+              img: "images/물보라.jpg",
+            },
+            browndot: {
+              name: "ブラウンドットホテル 広安里店",
+              desc: "オーシャンビュー、1泊5万ウォン台、清潔なインテリア",
+              img: "images/브라운도트.jpg",
+            },
+            nomorepizza: {
+              name: "ノーモアピザ 広安里店",
+              desc: "広安里ビーチ近く。個性的なピザメニュー",
+              img: "images/노모어피자.jpg",
+            },
+            bupyeong: {
+              name: "富平カントン市場",
+              desc: "釜山名物グルメ探訪、屋台料理豊富",
+              img: "images/부평깡통시장.jpg",
+            },
+            gaegummil: {
+              name: "西面 ケグムミルミョン",
+              desc: "釜山代表冷麺類、コスパ7千ウォン台。映画の殿堂 → 西面 地下鉄約25分",
+              img: "images/개금밀면.jpg",
+            },
+            seomyeoncafe: {
+              name: "西面 カフェ通り（アンドテイル/ウェイブオン）",
+              desc: "インスタ映えカフェ密集地域",
+              img: "images/서면카페.jpg",
+            },
+            avenue: {
+              name: "アベニューホテル 西面店",
+              desc: "中心地アクセス良好、1泊4万ウォン台",
+              img: "images/아브뉴.jpg",
+            },
+            gukje: {
+              name: "国際市場/富平カントン市場",
+              desc: "簡単なショッピング + 韓国の雰囲気",
+              img: "images/국제시장.jpg",
+            },
+            dureraum2: {
+              name: "映画の殿堂 水辺道 再訪問",
+              desc: "釜山国際映画祭の象徴的な場所。団体写真スポット",
+              img: "images/영화의전당.jpg",
+            },
+          },
+        },
+        zh: {
+          courseButtons: {
+            ko: "🇰🇷 韩国朋友路线",
+            ja: "🇯🇵 日本朋友路线",
+            cn: "🇨🇳 中国朋友路线",
+          },
+          courseTitle: {
+            ko: "韩国朋友路线",
+            ja: "日本朋友路线",
+            cn: "中国朋友路线",
+          },
+          day1: "Day 1",
+          day2: "Day 2",
+          places: {
+            dureraum: {
+              name: "电影殿堂",
+              desc: "釜山国际电影节象征性场所。团体照景点",
+              img: "images/영화의전당.jpg",
+            },
+            miryang: {
+              name: "密阳血肠猪肉汤饭 海云台店",
+              desc: "性价比汤饭餐厅（6~8千韩元），饱腹午餐。从电影殿堂乘巴士约10分钟",
+              img: "images/밀양순대돼지국밥.jpg",
+            },
+            osulloc: {
+              name: "O'Sulloc茶馆 海云台店",
+              desc: "绿色感性咖啡馆，茶+甜点。海云台海水浴场正前方",
+              img: "images/오설록.jpg",
+            },
+            haeundae: {
+              name: "海云台海水浴场",
+              desc: "散步拍照景点。推荐日落时间",
+              img: "images/해운대.jpg",
+            },
+            toyoko: {
+              name: "东横INN 海云台1号店",
+              desc: "步行可达海云台全区，1晚4万~5万韩元",
+              img: "images/토요코인.jpg",
+            },
+            haeundaemarket: {
+              name: "海云台传统市场",
+              desc: "本地氛围 + 合理价格 + 街头美食",
+              img: "images/해운대전통시장.jpg",
+            },
+            dongbaek: {
+              name: "冬柏公园",
+              desc: "海岸散步道徒步",
+              img: "images/동백공원.jpg",
+            },
+            shinsegae: {
+              name: "Centum City新世界美食广场",
+              desc: "整洁多样的食物，刷卡方便",
+              img: "images/신세계.jpg",
+            },
+            gwangalli: {
+              name: "广安里海滨夜景",
+              desc: "广安大桥灯光下打卡必拍",
+              img: "images/광안리.jpg",
+            },
+            mulbora: {
+              name: "Mulbora 广安店",
+              desc: "海边正前方居酒屋风格酒吧。人均约1万韩元",
+              img: "images/물보라.jpg",
+            },
+            browndot: {
+              name: "Brown Dot酒店 广安里店",
+              desc: "海景房，1晚5万韩元，干净的室内装饰",
+              img: "images/브라운도트.jpg",
+            },
+            nomorepizza: {
+              name: "No More Pizza 广安里店",
+              desc: "广安里海水浴场附近。有个性的披萨菜单",
+              img: "images/노모어피자.jpg",
+            },
+            bupyeong: {
+              name: "富平罐头市场",
+              desc: "釜山名物美食探访，街头食品丰富",
+              img: "images/부평깡통시장.jpg",
+            },
+            gaegummil: {
+              name: "西面 盖金冷面",
+              desc: "釜山代表冷面类，性价比7千韩元。电影殿堂 → 西面 地铁约25分钟",
+              img: "images/개금밀면.jpg",
+            },
+            seomyeoncafe: {
+              name: "西面咖啡街（And Tail/Wave On）",
+              desc: "Instagram风格咖啡馆密集区域",
+              img: "images/서면카페.jpg",
+            },
+            avenue: {
+              name: "Avenue酒店 西面店",
+              desc: "市中心交通便利，1晚4万韩元",
+              img: "images/아브뉴.jpg",
+            },
+            gukje: {
+              name: "国际市场/富平罐头市场",
+              desc: "简单购物 + 韩国氛围",
+              img: "images/국제시장.jpg",
+            },
+            dureraum2: {
+              name: "电影殿堂水边路 再次访问",
+              desc: "釜山国际电影节象征性场所。团体照景点",
+              img: "images/영화의전당.jpg",
+            },
+          },
         },
       };
 
       function initMap() {
-        map = L.map("map").setView([35.1596, 129.0594], 11);
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "© OpenStreetMap contributors",
-        }).addTo(map);
-
-        updateMap();
+        map = L.map("map").setView([35.12, 129.08], 11);
+        L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+          { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 19 }
+        ).addTo(map);
+        updateDisplay();
       }
 
-      function updateMap() {
+      function updateDisplay() {
+        const trans = translationsFull[currentLang] || translationsFull.ko;
+        const course = courseDataFull[currentCourse];
+
+        // Update course button texts
+        document.getElementById("course-ko-text").textContent =
+          trans.courseButtons.ko;
+        document.getElementById("course-ja-text").textContent =
+          trans.courseButtons.ja;
+        document.getElementById("course-cn-text").textContent =
+          trans.courseButtons.cn;
+
+        // Update itinerary title
+        document.getElementById("itinerary-title").textContent =
+          trans.courseTitle[currentCourse];
+
+        ["day1", "day2"].forEach((day) => {
+          const dayPlanEl = document.getElementById(`${day}-plan`);
+          if (course[day] && course[day].length > 0) {
+            dayPlanEl.innerHTML = `<h4>${trans[day]}</h4>`;
+            course[day].forEach((place) => {
+              const placeInfo = trans.places[place.id];
+              const placeEl = document.createElement("div");
+              placeEl.className = "place";
+              placeEl.innerHTML = `<img src="${placeInfo.img}" alt="${placeInfo.name}"><div class="place-info"><div class="place-name">${placeInfo.name}</div><p class="place-desc">${placeInfo.desc}</p></div>`;
+              placeEl.onclick = () => {
+                map.setView([place.lat, place.lng], 16);
+              };
+              dayPlanEl.appendChild(placeEl);
+            });
+          } else {
+            dayPlanEl.innerHTML = "";
+          }
+        });
+
         markers.forEach((marker) => map.removeLayer(marker));
         markers = [];
+        routeLines.forEach((line) => map.removeLayer(line));
+        routeLines = [];
 
-        const data = translations[currentLang];
+        const allLatLngs = [];
 
-        data.attractions.forEach((attraction, index) => {
-          const marker = L.marker([attraction.lat, attraction.lng]).addTo(map)
-            .bindPopup(`
-                        <div class="custom-popup">
-                            <h4>${attraction.name}</h4>
-                            <p>${attraction.description}</p>
-                        </div>
-                    `);
+        if (course.day1 && course.day1.length > 0) {
+          const day1LatLngs = course.day1.map((p) => {
+            allLatLngs.push([p.lat, p.lng]);
+            return [p.lat, p.lng];
+          });
+          routeLines.push(
+            L.polyline(day1LatLngs, {
+              color: "#f000b8",
+              weight: 3,
+              dashArray: "5, 10",
+            }).addTo(map)
+          );
+          course.day1.forEach((place) => addMarker(place, "day1"));
+        }
 
-          markers.push(marker);
-        });
+        if (course.day2 && course.day2.length > 0) {
+          const day2LatLngs = course.day2.map((p) => {
+            allLatLngs.push([p.lat, p.lng]);
+            return [p.lat, p.lng];
+          });
+          routeLines.push(
+            L.polyline(day2LatLngs, {
+              color: "#00f2ea",
+              weight: 3,
+              dashArray: "5, 10",
+            }).addTo(map)
+          );
+          course.day2.forEach((place) => addMarker(place, "day2"));
+        }
+
+        if (allLatLngs.length > 0) {
+          map.fitBounds(allLatLngs, { padding: [50, 50] });
+        }
       }
 
-      function updateContent() {
-        const data = translations[currentLang];
-
-        document.getElementById("title").textContent = data.title;
-        document.getElementById("attractions-title").textContent =
-          data.attractionsTitle;
-
-        const content = document.getElementById("attractions-content");
-        content.innerHTML = "";
-
-        data.attractions.forEach((attraction, index) => {
-          const item = document.createElement("div");
-          item.className = "attraction-item";
-          item.innerHTML = `
-                    <h4>${attraction.name}</h4>
-                    <p>${attraction.description}</p>
-                `;
-          item.onclick = () => {
-            map.setView([attraction.lat, attraction.lng], 15);
-            markers[index].openPopup();
-          };
-          content.appendChild(item);
+      function addMarker(place, day) {
+        const trans = translationsFull[currentLang] || translationsFull.ko;
+        const placeInfo = trans.places[place.id];
+        const icon = L.divIcon({
+          className: `neon-marker marker-${day}`,
+          iconSize: [20, 20],
         });
+        const marker = L.marker([place.lat, place.lng], {
+          icon: icon,
+          placeId: place.id,
+        })
+          .addTo(map)
+          .bindPopup(`<b>${placeInfo.name}</b>`, {
+            autoClose: false,
+            closeOnClick: false,
+          });
+        marker.openPopup();
+        markers.push(marker);
       }
 
+      function changeCourse(course) {
+        currentCourse = course;
+        document
+          .querySelectorAll(".course-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.getElementById(`course-${course}`).classList.add("active");
+        updateDisplay();
+      }
       function changeLanguage(lang) {
         currentLang = lang;
-
-        document.querySelectorAll(".lang-btn").forEach((btn) => {
-          btn.classList.remove("active");
-        });
-        event.target.classList.add("active");
-
-        updateContent();
-        updateMap();
+        document
+          .querySelectorAll(".lang-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        document
+          .querySelector(`.lang-btn[onclick="changeLanguage('${lang}')"]`)
+          .classList.add("active");
+        updateDisplay();
       }
 
-      window.onload = () => {
-        initMap();
-        updateContent();
-      };
+      window.onload = initMap;
     </script>
   </body>
 </html>
